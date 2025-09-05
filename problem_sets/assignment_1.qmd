@@ -1,0 +1,43 @@
+---
+title: "assignment1"
+format: gfm
+author: Chunxi
+---
+
+library(tidyverse)
+library(knitr)
+
+Instructions
+------------
+
+-   Write instructions here
+
+<br>
+
+Exercise 1
+----------
+
+<br>
+
+economist_data <- read_csv("https://raw.githubusercontent.com/nt246/NTRES-6100-data-science/master/datasets/EconomistData.csv")
+
+<br>
+
+#### 1.1
+
+``` r
+## Write your code here
+```
+
+<br>
+
+Exercise 2
+----------
+
+<br>
+
+#### 2.1
+
+``` r
+## Write your code here
+```
