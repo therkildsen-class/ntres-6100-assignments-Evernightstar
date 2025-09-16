@@ -1,4 +1,5 @@
 library(tidyverse)
+# library(skimr)
 
 mpg 
 
@@ -32,3 +33,12 @@ ggplot(data = mpg) +
 ggplot(data = mpg) + 
   geom_point(mapping = aes(x = displ, y = hwy))+
   facet_wrap(~ class)
+
+ggplot(data=mpg,mapping=aes(x=displ,y=hwy))+
+  geom_point(mapping=aes(color=class, size=cyl),shape=1)+
+  geom_smooth(mapping = aes(x=displ,y=hwy))+
+  facet_wrap(~ year,nrow=2)+
+  theme_minimal()
+
+ggsave(filename="plots/hwy_vs_dipl.pdf",width=8,height=4)
+?ggsave
