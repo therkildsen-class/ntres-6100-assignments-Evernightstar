@@ -3,6 +3,7 @@
 This is a template repository for students in NTRES 6100. Through GitHub Classroom, each student will create a repository from this template that is only accessible to the student and class instructors. Students will then use the resulting repository to submit their weekly assignments. Students can also choose to keep their class notes and exercises in this repository.
 
 link for assigment2: https://github.com/Evernightstar/Assigment2
+Assignment 3:https://github.com/Evernightstar/assignment-3-cw2259
 
 #### Student:
 
