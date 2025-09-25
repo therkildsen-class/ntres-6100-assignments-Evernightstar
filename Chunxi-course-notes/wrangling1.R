@@ -81,3 +81,112 @@ vacc |>
   filter(vaxxrate>0.9)
   arrange(-vaxxrate) |> 
   head(5)
+  
+  
+
+  
+#Summarize function----------------------------------------------------------------
+
+coronavirus |>
+    filter(type=="confirmed") |> 
+    summarize(total=sum(cases)) |> 
+    arrange(-total)
+
+coronavirus |> 
+  group_by(date,type) |> 
+  summarize(total=sum(cases)) |> 
+  filter(date=="2023-01-03")
+
+coronavirus |> 
+  filter(type=="death") |> 
+  group_by(date) |> 
+  summarize(total=sum(cases)) |> 
+  arrange(-total)
+
+gg_base<-coronavirus |> 
+  group_by(date) |> 
+  filter(type=="confirmed") |>
+  summarize(total_case=sum(cases)) |> 
+  ggplot(mapping=aes(x=date,y=total_case))
+
+gg_base+geom_line()
+
+gg_base+
+  geom_point()
+
+gg_base+
+  geom_col(fill="blue")
+
+gg_base+
+  geom_area(fill="red")
+
+gg_base+
+  geom_line(
+    color="purple",
+    linetype="dashed"
+  )
+
+gg_base+
+  geom_point(
+    color="purple",
+    shape=20,
+    size=5,
+    alpha=0.4
+  )
+
+gg_base+
+  geom_point(
+    mapping = aes(size=total_case,color=total_case),
+    alpha=0.5
+  )+
+  theme_minimal()+
+  theme(legend.background = element_rect(
+    fill = "yellow",
+    color="grey90",
+    linewidth=0.7
+  ))
+#theme(legend.position = none)
+  
+  gg_base+
+    geom_point(
+      mapping = aes(size=total_case,color=total_case),
+      alpha=0.5
+    )+
+    theme_minimal()+
+    labs(
+      x="date",
+      y="Total confirmed cases",
+      title = str_c("Daily counts of new coronavirus cases",max(coronavirus$date)),
+      subtitle="Global Sums"
+    )
+
+top5<-coronavirus |> 
+  group_by(country) |> 
+  filter(type=="confirmed") |>
+  summarize(total=sum(cases)) |> 
+  arrange(-total) |> 
+  head(5) |> 
+  pull(country)
+
+top5 |> 
+  group_by(date,country) |> 
+  filter(type=="confirmed") |>
+  summarize(total=sum(cases)) |>
+  ggplot()+
+  geom_line(mapping=aes(x=date,y=total,color=country))
+
+coronavirus |> 
+  filter(type=="confirmed",country%in%top5,cases>=0) |>
+  group_by(date,country) |> 
+  summarize(total=sum(cases)) |>
+  ggplot()+
+  geom_line(mapping=aes(x=date,y=total,color=country))+
+  facet_wrap(~country,ncol=1)
+
+coronavirus |>
+  filter(type == "confirmed") |>
+  group_by(country) |>
+  summarize(total = sum(cases)) |>
+  arrange(-total) |>
+  head(5) |>
+  pull(country)
