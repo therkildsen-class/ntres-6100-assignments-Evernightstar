@@ -1,0 +1,130 @@
+---
+title: "lab5"
+format: github_document
+---
+
+```{r}
+library(tidyverse)
+library(knitr)
+```
+
+```{r}
+titanic <- read_csv("https://raw.githubusercontent.com/nt246/NTRES-6100-data-science/master/datasets/Titanic.csv")
+
+# Let's look at the top 5 lines of the dataset
+head(titanic, n = 5) |>
+  kable()
+
+view(titanic)
+```
+
+## **Exercise 1**
+
+-   Q1
+
+```{r}
+titanic |> 
+  summarise(
+    Survived_num = sum(Survived == 1),
+    All_num = n(),
+    SurRate = round(Survived_num / All_num, 2)
+  )
+
+
+
+
+
+  
+  
+```
+
+-   Q2
+
+```{r}
+titanic |> 
+  summarise(
+    male_num = sum(Sex=="male"),
+    female_num = sum(Sex=="female")
+  )
+
+titanic |> 
+  group_by(Sex,Pclass) |> 
+  ggplot()+
+  geom_bar(mapping=aes(x=Sex,fill=Sex))+
+  facet_wrap(~Pclass)
+
+```
+
+-   Q3
+
+```{r}
+survival_rates <- titanic  |> 
+  group_by(Sex)  |> 
+  summarise(SurvivalRate = mean(Survived))
+
+titanic |> 
+  group_by(Sex,Survived) |> 
+  ggplot()+
+  geom_bar(aes(x=Sex,fill=Sex))+
+  facet_wrap(~Survived)+
+  geom_text(
+    data = survival_rates,
+    aes(
+      x = Sex,
+      y = 30, 
+      label = paste0("Rate: ", round(SurvivalRate, 2))
+    )
+  )
+  
+```
+
+-   Q4
+
+```{r}
+titanic |> 
+  summarise(
+    No_age = sum(is.na(Age)),
+    available=sum(!is.na(Age))
+    )
+
+```
+
+```{r}
+
+titanic |> 
+  filter(!is.na(Age)) |> 
+  select(Age,Sex,Pclass,PassengerId) |> 
+  ggplot()+
+  geom_histogram(mapping=aes(x=Age))
+```
+
+-   Q5
+
+```{r}
+titanic |> 
+  group_by(Pclass,Age) |> 
+  ggplot()+
+  geom_point(mapping=aes(x=factor(Pclass),y=Age,color=Sex))
+  
+```
+
+-   Q6
+
+```{r,warning=FALSE}
+titanic |>
+  filter(!is.na(Age)) |>
+  group_by(Sex,Survived) |> 
+  ggplot(mapping=aes(x=Age,fill = factor(Survived)))+
+  geom_histogram()+
+  facet_grid(Sex~Pclass)
+```
+
+-   Q7
+
+```{r}
+titanic |> 
+  mutate(family_num=SibSp+Parch) |> 
+  ggplot()+
+  geom_bar(aes(x=family_num))
+  
+```
