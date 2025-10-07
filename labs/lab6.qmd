@@ -1,0 +1,127 @@
+---
+title: "lab6"
+format: github_document
+---
+
+## **Exercise 1: Whale observation**
+
+```{r}
+#| echo: true
+#| message: false
+#| warning: false
+library(tidyverse)
+library(knitr)
+
+# Read in the data
+whales <- read_csv("https://raw.githubusercontent.com/nt246/NTRES-6100-data-science/main/datasets/whales.csv")
+whales |> head() |> kable()
+```
+
+#### Q1
+
+```{r}
+whales_long<-whales |> 
+  pivot_longer(c('blue','humpback','southern_right','sei','fin','killer_whale','bowhead','grey'),names_to = "species",values_to = "info")
+
+whales_long
+
+```
+
+Q2
+
+```{r}
+whales_clean<-whales_long |> 
+  filter(!is.na(info))
+whales_clean
+```
+
+Q3
+
+```{r}
+whales_split<-whales_clean |> 
+  separate(info, c("date", "outcome", "size", "ocean"), ",")
+whales_split
+```
+
+Q4
+
+```{r}
+whales_parsed<-whales_split |> 
+  mutate(
+    observer = as.numeric(observer),
+    date     = as.Date(date, format = "%m/%d/%y"),
+    size     = as.integer(size)
+   )
+whales_parsed 
+```
+
+Q5
+
+```{r}
+whales_parsed |> 
+  group_by(species) |> 
+  summarise(ship_strikes=n(),size_mean=mean(size,na.rm = TRUE))
+```
+
+#### Q6
+
+```{r}
+whales_parsed |> 
+  ggplot(aes(x = date, y = size, color = outcome))+
+  geom_point(aes(shape = factor(observer)))+
+  facet_grid(species ~ ocean)
+           
+  
+```
+
+## **Exercise 2: Baby names**
+
+```{r}
+#install.packages("babynames")
+library(babynames)
+library(ggrepel)
+View(babynames)
+```
+
+#### Q1
+
+```{r}
+babynames |> 
+  filter(sex=="F") |> 
+  arrange(desc(prop)) |> 
+  head(6)
+
+babynames |> 
+  filter(sex=="M") |> 
+  arrange(desc(prop)) |> 
+  head(6)
+```
+
+#### Q2
+
+```{r}
+babynames |>
+  mutate(decade=floor(year/10)*10) |> 
+  group_by(sex,decade,name) |> 
+  summarise(total_count = sum(n))
+  arrange(desc(n)) |> 
+  ggplot(aes(x=decade,y=total_count, color=sex))+
+    geom_line()+
+    geom_point()
+  
+  
+```
+
+```{r}
+babynames |>
+  mutate(decade = floor(year/10)*10) |>
+  group_by(sex, decade, name) |>
+  summarise(total_count = sum(n)) |>
+  group_by(sex, decade) |>
+  slice_max(order_by = total_count, n=1) |>
+  ggplot(aes(x=decade, y=total_count, color=sex)) +
+  geom_line(size = 1.5) +
+  geom_point(size = 3)+
+  ggrepel::geom_label_repel(aes(label=name)) +
+  cowplot::theme_cowplot()
+```

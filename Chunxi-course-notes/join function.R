@@ -1,5 +1,5 @@
 library(tidyverse)
-install.packages("nycflights13")
+#install.packages("nycflights13")
 library(nycflights13)
 
 
@@ -62,3 +62,22 @@ flights2 |>
   left_join(airports2,join_by(origin==faa)) |> 
   left_join(airports2,join_by(dest==faa),suffix=c("_origin","_dest"))
 
+airports |> 
+  semi_join(flights2,join_by(faa==origin))
+
+flights2 |> 
+  anti_join(airports,join_by(dest==faa)) |> 
+  destinct(dest)
+
+#two ways the same result
+planes_gt100<-flights2 |> 
+  group_by(tailnum) |> 
+  summarize(count=n()) |> 
+  filter(count>100)
+  
+planes_gt100<-flights2 |> 
+  count(tailnum) |> 
+  filter(n>100)
+
+flights |> 
+  semi_join(planes_gt100)
