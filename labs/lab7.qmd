@@ -1,0 +1,80 @@
+---
+title: "lab7"
+format: github_document
+---
+
+```{r}
+library(tidyverse)
+library(knitr)
+library(nycflights13) # install.packages("nycflights13")
+flights |> head() |> kable()
+View(flights)
+View(airports)
+```
+
+### Q1
+
+```{r}
+avg_delay_des<-flights |> 
+  group_by(dest) |> 
+  summarise(delay=mean(arr_delay,na.rm=TRUE))
+
+avg_delay_des |> 
+  left_join(airports, c("dest" = "faa")) |> 
+  ggplot(aes(lon, lat)) +
+    borders("state") +
+    geom_point() +
+    coord_quickmap()
+```
+
+### Q2
+
+```{r}
+#planes
+age_delay<-planes |> 
+  inner_join(flights,by="tailnum",suffix = c("_flight", "_plane")) |> mutate(
+    age = year_flight - year_plane
+  ) |>  filter(!is.na(age)) |>
+  group_by(age) |>
+  summarise(
+    avg_dep_delay = mean(dep_delay, na.rm = TRUE),
+    avg_arr_delay = mean(arr_delay, na.rm = TRUE),
+    n = n()
+  )
+
+ggplot(age_delay,aes(x=age,y=avg_dep_delay))+
+  geom_point()
+ggplot(age_delay,aes(x=age,y=avg_arr_delay))+
+  geom_point()
+```
+
+### Q3
+
+```{r}
+#View(weather)
+wea_delay<-flights |> 
+  inner_join(weather,
+             by=c("origin","year","month","day","hour")
+             ) |> 
+  group_by(precip) |> 
+   summarise(delay = mean(dep_delay, na.rm = TRUE))
+
+wea_delay |> 
+  ggplot(aes(x = precip, y = delay)) +
+  geom_line() + 
+  geom_point()
+```
+
+## **Exercise 2: Baby names**
+
+```{r}
+library(babynames) # install.packages("babynames")
+
+babynames |> head() |> kable()
+```
+
+### Q1
+
+```{r}
+babynames |> 
+```

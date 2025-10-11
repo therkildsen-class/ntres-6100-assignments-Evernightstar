@@ -1,0 +1,170 @@
+---
+title: "assignment6"
+format: gfm
+---
+
+```{r}
+library(tidyverse)
+library(knitr)
+library(ggplot2)
+```
+
+## **Exercise 1. Tibble and Data Import**
+
+#### 1.1
+
+```{r}
+tribble(
+  ~a, ~b, ~c,
+  #--|--|----
+  1, 2.1, "apple",
+  2, 3.2, "orange"
+)
+```
+
+```{r}
+tibble(
+  a = c(1L, 2L),
+  b = c(2.1, 3.2),
+  c = c("apple", "orange")
+)
+```
+
+#### **1.2 Import `https://raw.githubusercontent.com/nt246/NTRES-6100-data-science/master/datasets/dataset2.txt` into R. Change the column names into “Name”, “Weight”, “Price”**
+
+```{r}
+dataset2 <- read.table(
+  "https://raw.githubusercontent.com/nt246/NTRES-6100-data-science/master/datasets/dataset2.txt",
+  header = FALSE,
+  sep=","
+)
+
+colnames(dataset2) <- c("Name", "Weight", "Price")
+dataset2
+```
+
+#### **1.3 Import `https://raw.githubusercontent.com/nt246/NTRES-6100-data-science/master/datasets/dataset3.txt` into R. Watch out for the first few lines, missing values, separators, quotation marks, and deliminaters.**
+
+```{r}
+dataset3<-read_lines("https://raw.githubusercontent.com/nt246/NTRES-6100-data-science/master/datasets/dataset3.txt"
+  )
+#View(dataset3)
+
+dataset3_tidy<-dataset3 |> 
+  keep(~ grepl(";", .x)) |>
+   discard(~ grepl("Name", .x, ignore.case = TRUE)) |>
+  tibble(line = _) |> 
+  separate(line, into = c("Name", "Weight", "Price"), sep = ";") |> 
+  mutate(
+    Name = gsub("/", "", Name),
+    Weight = na_if(Weight, "?"),
+    Price = na_if(Price, "Not Available"),
+    Weight = as.numeric(Weight),
+    Price = as.numeric(Price))
+dataset3_tidy
+```
+
+## **Exercise 2. Weather station**
+
+#### **2.1 Variable descriptions**
+
+```{r}
+air<-read_delim("https://raw.githubusercontent.com/nt246/NTRES-6100-data-science/master/datasets/2015y_Weather_Station_notes.txt",delim="-")
+air
+```
+
+#### **2.2 Data tidying**
+
+```{r}
+weather_sta<-read.csv("https://raw.githubusercontent.com/nt246/NTRES-6100-data-science/master/datasets/2015y_Weather_Station.csv")
+#names(weather)
+weather_sta_tidy<-weather_sta |> pivot_longer(
+    cols = 'X00':'X23',             
+    names_to = "hour",            
+    values_to = "value" 
+) |>
+  pivot_wider(
+    names_from = item,            
+    values_from = value
+  ) |> 
+  mutate(
+    RAINFALL = str_replace(RAINFALL, "NR", "0"),
+    across(
+    everything(),
+    ~ case_when(
+        .x %in% c("NR", "#", "*", "x") ~ NA_character_,
+        TRUE ~ .x
+      )),
+    date = ymd(date),
+     hour = str_remove(hour, "^X"),
+    hour = sprintf("%02d:00", as.integer(hour))
+  )
+weather_sta_tidy |> 
+  select(1:10) |> 
+  head(6)
+ 
+```
+
+#### **2.3 Using this cleaned dataset, plot the daily variation in ambient temperature on September 25, 2015, as shown below.**
+
+```{r}
+weather_sta_tidy |> 
+  filter(date == ymd("2015-09-25")) |>
+  mutate(
+    hour_time = hms::parse_hm(hour)
+  ) |> 
+  ggplot(aes(x = hour_time, y = as.numeric(AMB_TEMP)))+
+  geom_line()+
+  scale_x_time(
+    breaks = hms::parse_hm(sprintf("%02d:00", seq(0, 24, 4)))
+  )
+```
+
+#### **2.4 Plot the daily average ambient temperature throughout the year with a continuous line, as shown below.**
+
+```{r}
+weather_sta_tidy |>
+  mutate(AMB_TEMP = as.numeric(AMB_TEMP)) |>        
+  group_by(date) |>
+  summarise(daily_avg_temp = mean(AMB_TEMP, na.rm = TRUE)) |> 
+  ggplot(aes(x = date, y = daily_avg_temp)) +
+  geom_line()
+```
+
+#### **2.5 Plot the total rainfall per month in a bar chart, as shown below.**
+
+```{r}
+weather_sta_tidy |>
+  mutate(
+    RAINFALL = as.numeric(RAINFALL),
+    year = year(date),
+    month = month(date, label = TRUE, abbr = TRUE)
+  ) |>
+  group_by(year, month) |>
+  summarise(total_rainfall = sum(RAINFALL, na.rm = TRUE), .groups = "drop") |>
+  ggplot(aes(x = month, y = total_rainfall)) +
+  geom_col()
+```
+
+#### **2.6 Plot the per hour variation in PM2.5 in the first week of September with a continuous line, as shown below.**
+
+```{r}
+weather_sta_tidy |>
+  mutate(
+    PM2.5 = stringr::str_replace_all(PM2.5, "[*#x]", ""), 
+    PM2.5 = as.numeric(PM2.5), 
+    hour = as.numeric(substr(hour, 1, 2))
+  ) |>
+  filter(!is.na(PM2.5)) |> 
+  mutate(
+    datetime = make_datetime(
+      year = year(date),
+      month = month(date),
+      day = day(date),
+      hour = hour        
+  )) |>
+  filter(datetime >= ymd("2015-09-01"),
+         datetime < ymd("2015-09-08")) |>       
+  ggplot(aes(x = datetime, y = PM2.5)) +
+  geom_line()
+```
