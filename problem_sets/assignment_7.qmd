@@ -1,0 +1,195 @@
+---
+title: "assignment_7"
+format: gfm
+---
+
+```{r}
+library(tidyverse)
+library(knitr)
+#install.packages("dslabs")
+library(dslabs)
+```
+
+## **Excercise: 2016 election result and polling**
+
+```{r}
+View(results_us_election_2016)
+View(polls_us_election_2016)
+View(murders)
+```
+
+### **Question 1. What is the relationship between the population size and the number of electoral votes each state has?**
+
+#### 1a.
+
+```{r}
+q_1a <- left_join(murders, results_us_election_2016, by = "state")
+head(q_1a)
+  
+```
+
+1b
+
+```{r}
+q_1b <- q_1a  |> 
+  mutate(winner = ifelse(clinton > trump, "Clinton", "Trump"))  |> 
+  select(-abb, -region, -total)
+head(q_1b)
+```
+
+1c
+
+```{r}
+q_1b |> 
+  ggplot(aes(x = population, y = electoral_votes, color = winner)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE, color = "black", size = 0.1)
+```
+
+### **Question 2. Would the election result be any different if the number of electoral votes is exactly proportional to a state’s population size?**
+
+2a.
+
+```{r}
+q_2a <- q_1b  |> 
+  pivot_longer(
+    cols = c(population, electoral_votes),
+    names_to = "variable",
+    values_to = "value"
+  )
+head(q_2a)
+```
+
+2b.
+
+```{r}
+q_2b <- q_1b  |> 
+  group_by(winner)  |> 
+  summarise(
+    electoral_votes = sum(electoral_votes),
+    population = sum(population)
+  )  |> 
+  pivot_longer(cols = c(electoral_votes, population),
+               names_to = "metric",
+               values_to = "value")  |> 
+  mutate(winner = tolower(winner))  |> 
+  select(metric, winner, value)
+q_2b
+```
+
+2c.
+
+```{r}
+total_ev <- sum(q_1b$electoral_votes)
+q_2b_prop <- q_2b  |> 
+  pivot_wider(names_from = metric, values_from = value)  |> 
+  mutate(prop_electoral_votes = population / sum(population) * total_ev)  |> 
+  select(winner, electoral_votes, prop_electoral_votes)  |> 
+  pivot_longer(cols = c(electoral_votes, prop_electoral_votes),
+               names_to = "system",
+               values_to = "votes") 
+
+# Plot
+ggplot(q_2b_prop, aes(x = system, y = votes, fill = winner)) +
+  geom_bar(stat = "identity")
+```
+
+### **Question 3. What if the election was determined by popular votes?**
+
+3a.
+
+```{r}
+election_results <- read_csv("https://raw.githubusercontent.com/kshaffer/election2016/master/2016ElectionResultsByState.csv")
+
+q_3a <- election_results  |> 
+  select(state, clintonVotes, trumpVotes, johnsonVotes, steinVotes, mcmullinVotes, othersVotes)  |> 
+  pivot_longer(
+    cols = -state,
+    names_to = "winner",
+    values_to = "votes"
+  )  |> 
+  mutate(winner = case_when(
+    winner == "clintonVotes" ~ "clinton",
+    winner == "trumpVotes" ~ "trump",
+    TRUE ~ "others"
+  )) |> 
+  group_by(winner)  |> 
+  summarise(value = sum(votes, na.rm = TRUE))
+q_3a
+```
+
+3b.
+
+```{r}
+q_3a_add<-q_3a |> mutate(
+metric = "popular_votes")
+q_3b <- bind_rows(q_2b, q_3a_add)
+q_3b
+```
+
+3c.
+
+```{r}
+calculate_share <- function(data, scenario_metric) {
+  scenario_data <- data |> 
+    filter(metric == scenario_metric)  |> 
+    mutate(total_value = sum(value))  |> 
+    mutate(share = (value / total_value) * 100)  |> 
+    
+    select(metric,winner, share)
+  
+  return(scenario_data)
+}
+
+share_electoral <- calculate_share(q_3b, "electoral_votes")
+share_proportional <- calculate_share(q_3b, "population")
+share_popular <- calculate_share(q_3b, "popular_votes")
+
+final_data <- bind_rows(share_electoral, share_proportional, share_popular)
+
+final_data |> ggplot(aes(x = metric, y = share, fill = winner)) +
+  geom_bar(stat = "identity", position = "stack")
+```
+
+### **Question 4. The election result in 2016 came as a huge surprise to many people, especially given that most polls predicted Clinton would win before the election. Where did the polls get wrong?**
+
+4a.
+
+```{r}
+q_4a <- polls_us_election_2016  |> 
+  filter(pollster == "Ipsos",
+         state != "U.S.") |> 
+  group_by(state) |> 
+  slice_max(order_by = enddate, n = 1, with_ties = FALSE) |> 
+  select(state, adjpoll_clinton, adjpoll_trump) 
+head(q_4a)
+```
+
+4b.
+
+```{r}
+q_4b <- q_4a |> 
+  left_join(q_1b, by = "state") |> 
+  mutate(polling_margin = adjpoll_clinton - adjpoll_trump) |> 
+  mutate(actual_margin = clinton - trump) |> mutate(polling_error = polling_margin - actual_margin) |> 
+  mutate(predicted_winner = case_when(
+    adjpoll_clinton > adjpoll_trump ~ "Clinton",
+    adjpoll_trump > adjpoll_clinton ~ "Trump"
+  )) |> 
+  mutate(result = ifelse(winner == predicted_winner, 
+                         "correct prediction", 
+                         str_c("unexpected ", winner, " win"))) |> 
+  select(state, polling_error, result, electoral_votes)
+head(q_4b)
+```
+
+4c.
+
+```{r}
+q_4b |> 
+  mutate(state = reorder(state, polling_error)) |> 
+  ggplot(aes(x = state, y = polling_error)) +
+  geom_point(aes(size = electoral_votes, color = result)) +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "grey") +
+  coord_flip()
+```
