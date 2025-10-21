@@ -307,4 +307,3 @@ economics  |>
   head(5)
 
 ```
-

@@ -1,0 +1,39 @@
+---
+title: "lab8"
+format: gfm
+---
+
+```{r}
+library(tidyverse)
+```
+
+## **Exercise 1: Optimize for loops**
+
+```{r}
+loop<-(1:5)*5000
+approach_1 <- vector("double", length(loop))
+approach_2 <- vector("double", length(loop))
+
+for (i in 1:length(loop)){
+  n=loop[i]
+  #approach1
+  z1 <- NULL
+  approach_1[i]<-system.time(
+    for (j in 1:n) {
+      z1 <- c(z1, 1)
+    }
+  )
+  
+  #approach2
+  z2<-vector(mode = "double", length=75000)
+  approach_2[i]<-system.time(
+    for (j in 1:n) {
+      z2[j]<-1
+    }
+  )
+}
+```
+
+## **Exercise 2: Infinite monkey theorem and Markov Chain Monte Carlo simulation**
+
+2.1
