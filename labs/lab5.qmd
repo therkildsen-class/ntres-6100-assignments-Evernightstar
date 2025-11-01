@@ -128,3 +128,30 @@ titanic |>
   geom_bar(aes(x=family_num))
   
 ```
+
+-   Q8
+
+```{r}
+titanic |>
+  mutate(
+    n_family = SibSp + Parch,
+    ticket_class = as.character(Pclass)
+  ) |>
+  count(n_family, ticket_class) |>
+  group_by(n_family) |>
+  mutate(proportion = n / sum(n)) |>
+  ggplot(aes(x = n_family, y = proportion, fill = ticket_class)) +
+  geom_col(color = "black") +
+  scale_x_continuous(breaks = 0:10) +
+  ylab("proportion") +
+  coord_flip()
+
+titanic_with_family <- titanic |>
+  mutate(n_family = SibSp + Parch)
+
+titanic_with_family |>
+  ggplot(aes(x = n_family)) +
+  geom_bar() +
+  scale_x_continuous(breaks = 0:10) +
+  facet_wrap(~Pclass, ncol = 1)
+```

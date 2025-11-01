@@ -1,0 +1,82 @@
+---
+author: CW
+title: R lab2
+format:
+  classic-cv-pdf: default
+
+
+cvfooter:
+  right: "https://github.com/Evernightstar"
+cvcolor: 58748F #without `#`
+cvfont: raleway #texlive fonts like raleway,fetamont,gillius,comfortaa
+cvmeta:
+
+  - title: Field
+    left: Plant Science
+    
+
+
+execute:
+  echo: false
+---
+
+```{r}
+#| label: cvevents
+cvevents <- function(tbl, when, what, where, details) {
+
+    command_start <- "\\cvevent"
+
+    res <- paste0(
+        command_start, "{", tbl[[when]], "}", 
+        "{", tbl[[what]], "}",
+        "{", tbl[[where]], "}")
+    
+    tbl[[details]] <- sapply(tbl[[details]], function(x) paste0("{", x, "}", collapse = ","))
+    res <- paste0(res, "{",tbl[[details]],"}")
+
+    cat(res, sep = "\n")
+}
+```
+
+# **SKILLS**
+
+![](miao.png){fig-align="right" width="120px"}
+
+-   Office \| SQL Database \| Power Designer Programming: C, Python, Java, HTML, PHP
+
+-   Careful and Patient \| Teamwork \| Communication \| Problem-solving Languages: English, Mandarin
+
+<br>
+
+
+
+
+
+# **EXTRACURRICULAR EXPERIENCE**
+
+```{r}
+#| label: experience
+#| output: asis
+tibble::tribble(
+    ~role, ~institution, ~dates, ~details, ~tasks,
+    "Deputy Director", "Project Management Center, Student Academic Association","Sep 2022 – Jun 2024",
+    "Transparent Social Analytics, Department of Computational Social Science", c("Led the promotion, planning, and on-site coordination of student activities, including drafting and organizing materials.", "Organized major events such as the “Challenge Cup” Sichuan University 2022-2023 Science and Technology Festival Carnival and the Academic Integrity Program CET-4/CET-6 Experience Sharing Sessions, with over 2,000 student participants.")
+    
+) |>
+    cvevents(when = "dates", what = "role", where = "institution", details = "tasks")
+
+```
+
+# **INTERNSHIP EXPERIENCE**
+
+```{r}
+#| label: INTERNSHIP
+#| output: asis
+tibble::tribble(
+    ~role, ~institution, ~dates, ~details, ~tasks,
+    "Product Manager", "Chengdu Zhiliao Huizhi Technology Co.","Jun 2024 – Jul 2024",
+    "Transparent Social Analytics, Department of Computational Social Science", c("Mainly responsible for developing HarmonyOS applications and conducted security penetration testing on relevant projects and hosts.", "	Contributed to both frontend and backend code applied MVVM framework to design custom components with similar structure and function in different pages.")
+    
+) |>
+    cvevents(when = "dates", what = "role", where = "institution", details = "tasks")
+```

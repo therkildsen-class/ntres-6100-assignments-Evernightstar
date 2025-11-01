@@ -69,6 +69,7 @@ wea_delay |>
 
 ```{r}
 library(babynames) # install.packages("babynames")
+library(dplyr)
 
 babynames |> head() |> kable()
 ```
@@ -76,5 +77,52 @@ babynames |> head() |> kable()
 ### Q1
 
 ```{r}
-babynames |> 
+top6_names <- babynames  |> 
+  group_by(sex, name)  |> 
+  summarize(total = sum(n), .groups = "drop") |> 
+  group_by(sex) |> 
+  slice_max(order_by = total, n = 6) 
+top6_names <- babynames|> 
+  semi_join(top6_names, by = c("sex", "name"))
+
+top6_names |> ggplot(aes(x = year, y = n, color = name)) +
+  geom_line() +
+  facet_wrap(~ sex, scales = "free_y")
+```
+
+Q2
+
+```{r}
+new_names <- babynames |> 
+  mutate(period = ifelse(year < 2010, "before_2010", "after_2010"))  |> 
+  group_by(name, period)  |> 
+  summarize(total = sum(n), .groups = "drop") |> 
+  pivot_wider(names_from = period, values_from = total, values_fill = 0) |> 
+  filter(before_2010 == 0, after_2010 > 1000)
+
+new_names
+
+```
+
+Q3
+
+```{r}
+unisex_names <- babynames  |> 
+  group_by(name, sex)  |> 
+  summarize(total = sum(n), .groups = "drop") |> 
+  pivot_wider(names_from = sex, values_from = total, values_fill = 0)  |> 
+  mutate(
+    total_all = F + M,
+    prop_girl = F / total_all
+  )  |> 
+  filter(prop_girl >= 0.1, prop_girl <= 0.9)  |> 
+    slice_max(order_by = total_all, n = 12)
+
+unisex_data <- babynames  |> 
+  semi_join(unisex_names, by = "name")  |> 
+  group_by(year, name)  |> 
+  summarize(prop_girl = sum(n[sex == "F"]) / sum(n), .groups = "drop")
+
+unisex_data |> ggplot(aes(x = year, y = prop_girl, color = name)) +
+  geom_line()
 ```

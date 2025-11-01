@@ -101,19 +101,6 @@ babynames |>
 
 ```{r}
 babynames |>
-  mutate(decade=floor(year/10)*10) |> 
-  group_by(sex,decade,name) |> 
-  summarise(total_count = sum(n))
-  arrange(desc(n)) |> 
-  ggplot(aes(x=decade,y=total_count, color=sex))+
-    geom_line()+
-    geom_point()
-  
-  
-```
-
-```{r}
-babynames |>
   mutate(decade = floor(year/10)*10) |>
   group_by(sex, decade, name) |>
   summarise(total_count = sum(n)) |>

@@ -1,0 +1,120 @@
+---
+title: "lab9"
+format: gfm
+---
+
+```{r}
+library(tidyverse)
+```
+
+## **Exercise 1. DNA or RNA?**
+
+#### **1.1 Write a function, `dna_or_rna(sequence)`, that determines if a sequence of base pairs is DNA, RNA, or if it is not possible to tell given the sequence provided.**
+
+```{r}
+dna_or_rna<-function(sequence){
+  chars <- strsplit(sequence, "")[[1]]
+  i=0
+  for (char in chars) {
+    i=i+1
+    if(char=="u"|char=="U"){
+      return("RNA")
+      break
+    }
+    if(char=="t"| char=="T"){
+      return("DNA")
+      break
+    }
+    if(i== length(chars)){
+      return("unknow")
+    }
+  }
+}
+
+dna_or_rna("attggc")
+
+dna_or_rna("gccaau")
+
+dna_or_rna("ccagac")
+
+dna_or_rna("tgcacug")
+```
+
+#### **1.2 Use the `dna_or_rna()` function and a for loop to print the type of the sequences in the following list.**
+
+```{r}
+sequences = c("ttgaatgccttacaactgatcattacacaggcggcatgaagcaaaaatatactgtgaaccaatgcaggcg", 
+              "gauuauuccccacaaagggagugggauuaggagcugcaucauuuacaagagcagaauguuucaaaugcau", 
+              "gaaagcaagaaaaggcaggcgaggaagggaagaagggggggaaacc", 
+              "guuuccuacaguauuugaugagaaugagaguuuacuccuggaagauaauauuagaauguuuacaacugcaccugaucagguggauaaggaagaugaagacu", 
+              "gataaggaagaugaagacutucaggaaucuaauaaaaugcacuccaugaauggauucauguaugggaaucagccggguc")
+
+sequence_type <- vector("character", length(sequences))
+for (i in seq_along(sequence_type)) {
+  sequence_type[i]<-dna_or_rna(sequences[i])
+  print(sequence_type[i])
+}
+```
+
+#### **1.3 Use the `dna_or_rna()` function and an appropriate map function to print the type of the sequences in the above list.**
+
+```{r}
+sapply(sequences, function(seq) {
+  type <- dna_or_rna(seq)
+  print(type)
+})
+```
+
+#### **1.4 Make your function work with both upper and lower case letters, or even strings with mixed capitalization. Test your function with the following three lines of code:**
+
+```{r}
+dna_or_rna("ATTGGC")
+
+dna_or_rna("gCCAAu")
+
+dna_or_rna("ggcacgG")
+```
+
+## **Exercise 2: Rounding (50 minutes)**
+
+#### **2.1 To correct this inconsistency issue, write a custom function that consistently applies a round half away from zero rule.**
+
+```{r}
+round_self<-function(num,digits){
+  integer<-floor(num)
+  decimal_part <- num - integer
+  
+  decimal_str <- as.character(decimal_part)
+  decimal_num <- strsplit(decimal_str, "\\.")[[1]][2]
+  last_decimal <- substr(decimal_num, nchar(decimal_num), nchar(decimal_num))
+  digits_num<-substr(decimal_num, nchar(decimal_num), nchar(digits))
+  if(0<num){
+    
+  }
+  if(num<0){
+    
+  }else{
+    0
+  }
+
+}
+```
+
+```{r}
+round_away <- function(x, digits) {
+  if (any(is.na(x)) || any(is.infinite(x))) {
+    warning("NA or infinite")
+  }
+  
+  multiplier <- 10^digits
+  scaled <- x * multiplier
+  rounded <- (scaled + 0.5 * sign(scaled)) %/% 1
+  result <- rounded / multiplier
+  
+  return(result)
+}
+
+round_away(-2.45, digits=1) 
+round_away(-0.55, digits=1)
+round_away(0.55, digits=0)
+```
