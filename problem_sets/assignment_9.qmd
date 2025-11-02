@@ -3,3 +3,111 @@ title: "assignment_9"
 format: gfm
 ---
 
+```{r}
+library(tidyverse)
+library(knitr)
+```
+
+### Exercise 1: Unit converter
+
+#### 1.1 Write a function that can convert Fahrenheit to Celsius, based on the following fomula: C = (F - 32) \* 5 / 9
+
+```{r}
+f_to_c<-function(f_temp){
+  c_temp=(f_temp - 32) * 5 / 9
+  print(c_temp)
+}
+f_to_c(50)
+f_to_c(212)
+```
+
+**1.2** A student came from ‘tropical Canada’. She doesn’t like the cold but she really didn’t like it when it’s hot. Although she wanted to know what the temperature is in Celsius when the US weather channel reported it in Fahrenheit, there are certain points at which it was just too cold or too hot for to to care about the exact value. **Modify the f_to_c function below to print the following**, and check if your function works properly using the input of **-10 F, 60 F, and 90 F**.
+
+```{r}
+f_to_c_message <- function(temp_f) {
+  temp_c <- (temp_f - 32) * 5 / 9
+  
+
+  if (temp_c < -20) {
+    print("Don't bother going out.")
+  } else if (temp_c > 30) {
+    print("I'm moving back to Canada.")
+  } else {
+    print(paste("The temperature is", round(temp_c, 2), "C"))
+  }
+}
+
+f_to_c_message(-10)
+f_to_c_message(60)
+f_to_c_message(90)
+```
+
+## **Exercise 2: Set operation**
+
+```{r}
+x <- c("prince", "mj", "sam cook", "whitney", "dolly")
+y <- c("sharon jones", "prince", "bowie", "leonard cohen", "phife dawg")
+setdiff(x,y)
+
+unique_element <- function(x, y) {
+  result <- c(setdiff(x, y), setdiff(y, x))
+  return(result)
+}
+
+unique_element(x,y)
+```
+
+## **Exercise 3: Fuel Efficiency of Car Models**
+
+```{r}
+mtcars_tbl <- as_tibble(mtcars, rownames = "model")
+mtcars_tbl %>%
+  head() %>%
+  kable()
+```
+
+```{r}
+mtcars_tbl |>
+  mutate(
+    cyl = factor(cyl),
+    model = fct_reorder(model, mpg)
+  ) |>
+  ggplot(aes(x = mpg, y = model)) +
+  geom_point(aes(size = hp, color = cyl)) +
+  geom_text(aes(label = model), hjust = 0, nudge_x = 0.5, size = 3) 
+```
+
+#### **In this assignment, you wrote functions that operate on vectors (Exercises 1 and 2) and manipulated a data frame to create a plot (Exercise 3). Explain the difference between a simple character vector (like the one for singers) and a factor (like the model column). Why was it necessary to treat the model column as a factor and reorder its levels to create the final plot?**
+
+A character vector has no sequence and hierarchical structure and only store text data.
+
+A factor has levels and sequence. Data stores as integer.
+
+Why: If we don't use factor, the car types will arrange in alphabetical order not mpg order, leading to a messy plot.
+
+#### **Identify one of the three exercises where you used an AI assistant to help generate or debug a chunk of code. Provide the specific prompt you used. Then, show the code before you finalized it (e.g., the AI's initial suggestion or your first attempt) and the final, working code. In your commentary, explain what was missing or incorrect in the "before" version and what you learned by testing and correcting it to produce the final version.**
+
+In exercise 2, the prompt I use: Give me the answer of this question in R. Then I paste the question in assignments.
+
+The first chunk of code it gave:
+
+```{r}
+unique_element <- function(vec1, vec2) {
+  only_in_vec1 <- setdiff(vec1, vec2)
+  only_in_vec2 <- setdiff(vec2, vec1)
+  return(c(only_in_vec1, only_in_vec2))
+}
+result <- unique_element
+
+print("Vector x (High Voices):")
+print(x)
+print("Vector y (Died in 2016):")
+print(y)
+print("---")
+print("Names of singers who either have high voices but did not die in 2016, OR who died in 2016 but do not have high voices (Symmetric Difference):")
+print(result)
+
+
+```
+
+The code makes sense but there are many unnecessary output. And AI's code uses new variable to take the place of x,y, which is more clear.
