@@ -24,4 +24,4 @@ Please use the following table to grade the student's assignment:
 |      6      |        X         |                     |              |
 |      7      |       X          |                     |               |
 |      8      |       X          |                     |               |
-|      9      |                 |                     |               |
+|      9      |       X          |                     |               |
